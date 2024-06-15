@@ -54,20 +54,48 @@ public class Repositorio {
         return listaFiltrada;
     }
 
+    public void checkMudblood (Boolean comprobante){
+
+        if (Boolean.TRUE.equals(comprobante)) {
+            throw new IllegalArgumentException("El mago NO puede ser mudblood");
+        }
+
+    }
+
+    public void checkExists (Boolean comprobante){
+
+        if (Boolean.FALSE.equals(comprobante)) {
+            throw new IllegalArgumentException("No existe el mago o el item");
+        }
+
+    }
+
     @Transactional
     public Optional<Order> placeOrder(String wizard, String magicalItem) {
 
         Optional<Wizard> wizardBuyer = Wizard.findByIdOptional(wizard);
         Optional<MagicalItem> itemToBuy = MagicalItem.find("name = ?1", magicalItem ).firstResultOptional();
 
-        if (wizardBuyer.isPresent() && itemToBuy.isPresent() && wizardBuyer.get().getWizard() != WizardPersona.MUDBLOOD ) {
+        try {
+            checkMudblood(wizardBuyer.get().getWizard() == WizardPersona.MUDBLOOD);
 
-            Order nuevaOrden = new Order(wizardBuyer.get(), itemToBuy.get());
-            nuevaOrden.persist();
-            return Optional.ofNullable(nuevaOrden);
-
+        } catch (IllegalArgumentException excepcion) {
+            System.out.println(excepcion.getMessage());
+            return Optional.empty();
         }
-        return Optional.empty();
+
+        try {
+            checkExists(wizardBuyer.isPresent() && itemToBuy.isPresent());
+        } catch (IllegalArgumentException exception) {
+            System.out.printf(exception.getMessage());
+            return Optional.empty();
+        }
+
+        Order nuevaOrden = new Order(wizardBuyer.get(), itemToBuy.get());
+        nuevaOrden.persist();
+
+        return Optional.ofNullable(nuevaOrden);
+
     }
 
     @Transactional

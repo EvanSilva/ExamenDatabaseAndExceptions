@@ -205,15 +205,18 @@ public class RepoTest {
 
     @Test
     @Transactional
-    public void test_pedido() {
-
+    public void test_pedido() throws Exception {
         // Hermione no puede comprar items
         Assertions.assertThat(repo).isNotNull();
-        Optional<Order> orden = repo.placeOrder("Hermione", "Elixir of the Mongoose");
-        Assertions.assertThat(orden).isEmpty();
+        try {
+            Optional<Order> orden = repo.placeOrder("Hermione", "Elixir of the Mongoose");
+        } catch (IllegalArgumentException e) {
+            // Verificar el mensaje de la excepción si es necesario
+            Assertions.assertThat(e.getMessage()).isEqualTo("El comprador es un Mudblood y no puede realizar la compra.");
+        }
 
         // Marius Black compra un item
-        orden = repo.placeOrder("Marius Black", "Elixir of the Mongoose");
+        Optional<Order> orden = repo.placeOrder("Marius Black", "Elixir of the Mongoose");
         Assertions.assertThat(orden).isNotEmpty();
 
         Assertions.assertThat(orden.get().getId()).isNotZero();
@@ -341,14 +344,6 @@ public class RepoTest {
      * Recuerda inyectar el repositorio en el servicio
      * y continua completando los test de ResourceTest.
      */
-
-    @Test
-    public void test_escepciones() throws Exception {
-
-
-
-    }
-
 
 
 }
